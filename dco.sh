@@ -1,26 +1,33 @@
 #!/bin/bash
 
-base_sha=cc6d291d09d466f3b1f7da8c2abf0f76aa85d231
+base_sha=4935183d70b200d9d6b56e0f9d92c34412083a1b
 echo "Base sha $base_sha"
-head_sha=21683236508613777e9b37dcffa67f7240689815
+head_sha=7214b6c2a32eee5f743856c50fb90f4d7b4687d6
 echo "Head sha $head_sha"
 echo "---"
 echo "Analyzing:"
-dco_check=$(git show --no-patch --format="%B" "$base_sha" | grep 'Signed-off-by:')
+fail=0
+dco_check="$(git show --no-patch --format="%B" "$base_sha" | grep 'Signed-off-by:')"
 if [ -z "$dco_check" ]; then
     echo "Commit $base_sha is missing the DCO sign-off!"
-    exit 1
+    fail=1
 fi
+echo "$base_sha passed"
 
 commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
 for commit in $commits; do
-dco_check=$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')
+dco_check="$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')"
 if [ -z "$dco_check" ]; then
-    echo "Commit $commit is missing the DCO sign-off!"
+    printf "\e[31m$commit failed\e[0m\n"
+    fail=1
+fi
+echo "$commit passed"
+done
+
+if [ "$fail" -ne 0 ]; then
+    echo "Failures found"
     exit 1
 fi
 
-echo "$commit passed"
-done
 echo "---"
 echo "All commits have DCO signed-off"

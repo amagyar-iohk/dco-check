@@ -21,15 +21,28 @@ jobs:
           echo "---"
           commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
           echo "Analyzing:"
-          # while [ "$commit_sha" != "$head_sha" ]; do
-          for commit in $commits; do
-          dco_check=$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')
+          fail=0
+          dco_check="$(git show --no-patch --format="%B" "$base_sha" | grep 'Signed-off-by:')"
           if [ -z "$dco_check" ]; then
-              echo "Commit $commit is missing the DCO sign-off!"
+              echo "Commit $base_sha is missing the DCO sign-off!"
+              fail=1
+          fi
+          echo "$base_sha passed"
+          
+          commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
+          for commit in $commits; do
+          dco_check="$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')"
+          if [ -z "$dco_check" ]; then
+              printf "\e[31m$commit failed\e[0m\n"
+              fail=1
+          fi
+          echo "$commit passed"
+          done
+          
+          if [ "$fail" -ne 0 ]; then
+              echo "Failures found"
               exit 1
           fi
           
-          echo "$commit passed"
-          done
           echo "---"
           echo "All commits have DCO signed-off"
