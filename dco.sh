@@ -20,10 +20,10 @@ dco_check="$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:'
 if [ -z "$dco_check" ]; then
     printf "\e[31m$commit failed\e[0m\n"
     fail=1
+else
+    echo "$commit passed"
 fi
-echo "$commit passed"
 done
-
 if [ "$fail" -ne 0 ]; then
     echo "Failures found"
     exit 1
