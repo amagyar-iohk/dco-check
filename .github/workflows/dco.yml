@@ -1,0 +1,35 @@
+name: DCO Check
+
+on:
+  pull_request:
+
+jobs:
+  dco:
+    name: DCO Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: DCO Check
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          echo "Base SHA: $base_sha"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          echo "Head SHA: $head_sha"
+          echo "---"
+          commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
+          echo "Analyzing:"
+          # while [ "$commit_sha" != "$head_sha" ]; do
+          for commit in $commits; do
+          dco_check=$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')
+          if [ -z "$dco_check" ]; then
+              echo "Commit $commit is missing the DCO sign-off!"
+              exit 1
+          fi
+          
+          echo "$commit passed"
+          done
+          echo "---"
+          echo "All commits have DCO signed-off"
