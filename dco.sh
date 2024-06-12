@@ -5,9 +5,14 @@ echo "Base sha $base_sha"
 head_sha=21683236508613777e9b37dcffa67f7240689815
 echo "Head sha $head_sha"
 echo "---"
-commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
 echo "Analyzing:"
-# while [ "$commit_sha" != "$head_sha" ]; do
+dco_check=$(git show --no-patch --format="%B" "$base_sha" | grep 'Signed-off-by:')
+if [ -z "$dco_check" ]; then
+    echo "Commit $base_sha is missing the DCO sign-off!"
+    exit 1
+fi
+
+commits="$(git rev-list --ancestry-path $base_sha..$head_sha)"
 for commit in $commits; do
 dco_check=$(git show --no-patch --format="%B" "$commit" | grep 'Signed-off-by:')
 if [ -z "$dco_check" ]; then
