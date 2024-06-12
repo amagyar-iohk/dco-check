@@ -37,7 +37,7 @@ jobs:
             printf "\e[31m$commit failed\e[0m\n"
             fail=1
           else
-            echo "$base_sha passed"
+            echo "$commit passed"
           fi
 
           done
