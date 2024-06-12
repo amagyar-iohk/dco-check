@@ -16,7 +16,7 @@ jobs:
         run: |
           base_sha="${{ github.event.pull_request.base.sha }}"
           echo "Base sha $base_sha"
-          head_sha="${{ github.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
           echo "Head sha $head_sha"
 
           commit_sha="$base_sha"
